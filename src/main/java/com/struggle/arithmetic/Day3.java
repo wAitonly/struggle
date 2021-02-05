@@ -1,5 +1,7 @@
 package com.struggle.arithmetic;
 
+import java.util.*;
+import java.util.stream.IntStream;
 
 /**
  * 最长回文子串
@@ -8,7 +10,7 @@ package com.struggle.arithmetic;
  */
 public class Day3 {
     public static void main(String[] args) {
-        one();
+        //one();
         two();
     }
 
@@ -36,8 +38,75 @@ public class Day3 {
      * 1 <= s.length <= 1000
      * s 仅由数字和英文字母（大写和/或小写）组成
      */
+    @SuppressWarnings("all")
     private static void one(){
-
+        String s = "aacabdkacaa";
+        //暴力求解
+        String result;
+        int size = s.length();
+        if(size == 1){
+            result = s;
+        }else {
+            Map<Double,Double> resultIndex = new HashMap<>(1);
+            IntStream.range(0,size - 1).forEach(i -> {
+                int step = 1;
+                while (i - step >= 0 && (i + step <= size - 1)){
+                    int start = i - step;
+                    int end = i + step;
+                    if(s.charAt(start) != s.charAt(end)){
+                        break;
+                    }
+                    if(resultIndex.size() > 0){
+                        Double key = resultIndex.keySet().iterator().next();
+                        if(step * 2 > resultIndex.get(key) - key){
+                            resultIndex.clear();
+                            resultIndex.put((double) start, (double) end);
+                        }
+                    }else {
+                        resultIndex.put((double) start, (double) end);
+                    }
+                    step ++;
+                }
+                //------------
+                double step2 = 1.5;
+                double mid2 = i + 0.5;
+                if(s.charAt(i) == s.charAt(i + 1)){
+                    if(resultIndex.size() > 0){
+                        Double key = resultIndex.keySet().iterator().next();
+                        if(2 > resultIndex.get(key) - key){
+                            resultIndex.clear();
+                            resultIndex.put((double)i,(double)i + 1);
+                        }
+                    }else {
+                        resultIndex.put((double)i,(double)i + 1);
+                    }
+                    while (mid2 - step2 >= 0 && (mid2 + step2 <= size - 1)){
+                        double start = mid2 - step2;
+                        double end = mid2 + step2;
+                        if(s.charAt((int) start) != s.charAt((int) end)){
+                            break;
+                        }
+                        if(resultIndex.size() > 0){
+                            Double key = resultIndex.keySet().iterator().next();
+                            if(step2 * 2 > resultIndex.get(key) - key){
+                                resultIndex.clear();
+                                resultIndex.put(start,end);
+                            }
+                        }else {
+                            resultIndex.put(start,end);
+                        }
+                        step2 ++;
+                    }
+                }
+            });
+            if(resultIndex.size() > 0){
+                Double resultStart = resultIndex.keySet().iterator().next();
+                result = s.substring(resultStart.intValue(),resultIndex.get(resultStart).intValue() + 1);
+            }else {
+                result = String.valueOf(s.charAt(0));
+            }
+        }
+        System.out.println(result);
     }
 
     /**
@@ -77,7 +146,32 @@ public class Day3 {
      * 0 <= value <= 104
      * 最多调用 3 * 104 次 get 和 put
      */
-    private static void two(){
 
+    @SuppressWarnings("all")
+    static class LRUCache extends LinkedHashMap<Integer, Integer>{
+        private int capacity;
+
+        public LRUCache(int capacity) {
+            super(capacity, 0.75F, true);
+            this.capacity = capacity;
+        }
+
+        public int get(int key) {
+            return super.getOrDefault(key, -1);
+        }
+
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<Integer, Integer> eldest) {
+            return size() > capacity;
+        }
     }
+
+    private static void two(){
+        LRUCache obj = new LRUCache(2);
+        int param = obj.get(1);
+        obj.put(1,1);
+        System.out.println(param);
+    }
+
+
 }
