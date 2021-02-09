@@ -5,7 +5,7 @@ import java.util.stream.IntStream;
 
 /**
  * 最长回文子串
- * 寻找两个正序数组的中位数
+ * LRU缓存机制
  * @author zhaobenquan
  */
 public class Day3 {
