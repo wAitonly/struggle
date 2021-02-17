@@ -1,0 +1,175 @@
+linux安装tomcat，如果有防火墙，后需要开放tomcat访问端口
+firewall-cmd --permanent --zone=public --add-port=8080/tcp
+firewall-cmd --reload
+firewall-cmd --zone=public --query-port=8080/tcp
+
+8080 8089 80 1532
+
+=================nginx安装===========================
+下载 
+http://nginx.org/download/nginx-1.17.6.tar.gz
+安装依赖 
+yum -y install gcc zlib zlib-devel pcre-devel openssl openssl-devel
+解压下载的安装包到文件夹如/hik/nginx
+进入解压后的文件夹如/hik/nginx/nginx-1.17.6
+依次执行命令
+./configure
+make
+make install
+安装完毕，可以看安装日志，默认会安装到/usr/local/nginx目录中
+启动nginx
+/usr/local/nginx/sbin/nginx -s reload  重启
+/usr/local/nginx/sbin/nginx            启动
+-------------------------------
+报错
+nginx: [error] open() "/usr/local/nginx/logs/nginx.pid" failed (2: No such file or directory)
+问题：环境问题
+解决方法：
+/usr/local/nginx/sbin/nginx -c /usr/local/nginx/conf/nginx.conf
+　使用nginx -c的参数指定nginx.conf文件的位置
+　　[root@localhost nginx]# cd logs/
+　　[root@localhost logs]# ll
+　　总用量 12
+　　-rw-r--r-- 1 root root 1246 12月 9 18:10 access.log
+　　-rw-r--r-- 1 root root 516 12月 10 15:39 error.log
+　　-rw-r--r-- 1 root root 5 12月 10 15:38 nginx.pid
+　　此时nginx.pid文件已经有了。
+最后同上开放端口，nginx默认80
+--------------------------------
+反向代理配置
+在http{}中的server{}上面添加需要代理的服务及端口
+upstream WPP {
+        server 10.2.158.75:8080;
+    }
+在server{}中的location /{}中注释掉默认两个路径。并添加代理路径
+proxy_pass http://WPP;
+切换到/usr/local/nginx/sbin目录使用./nginx -t验证配置是否合法
+source加载配置文件
+/usr/local/nginx/sbin/nginx -s reload重新启动nginx
+这样在浏览器直接访问该服务器ip即代理到8080端口的服务（即tomcat）
+----------------
+一个nginx通过不同端口代理多个服务
+在http{}中添加多个server{},相应的需要同步添加upstream{},不同的server监听不同的端口，同样需要将新端口开发防火墙访问
+
+
+===============ftp服务搭建=====================
+查看是否已经安装vsftpd 
+rpm -qa | grep vsftpd
+若没有即下载安装vsftpd 
+yum -y install vsftpd
+防火墙放行
+firewall-cmd --permanent --add-service=ftp
+firewall-cmd --reload
+启动ftp服务
+systemctl enable vsftpd.service
+systemctl start vsftpd.service
+无用户名和密码模式安装完毕，会自动生成/var/ftp文件夹，该文件夹即ftp默认地址
+里面有默认文件夹pub,浏览器通过ftp://10.2.158.75/pub即可访问该文件夹
+
+====================WPP打包=============================
+注意资源文件夹是否为webapp
+在pom.xml中 <!--指定jsp等文件所在位置-->
+<warSourceDirectory>webapp</warSourceDirectory>
+
+tomcat的webapp文件夹下有多个目录时候
+1.删除其他项目文件
+2.
+conf/web.xml --> tomcat的Web配置文件
+<init-param>
+<param-name>listings</param-name>
+<param-value>false</param-value>
+</init-param>
+value改成 true就行了！
+<init-param>
+<param-name>listings</param-name>
+<param-value>true</param-value>
+</init-param>
+
+
+===================rabbitMQ========================
+//重置RabbitMQ
+/usr/lib/rabbitmq/bin/
+停止对外应用服务：./rabbitmqctl stop_app
+重置：./rabbitmqctl reset
+启动应用服务: ./rabbitmqctl start_app   
+
+卸载
+rabbitmq是运行在erlang环境下的，所以卸载时应将erlang卸载。
+1、卸载rabbitmq相关
+卸载前先停掉rabbitmq服务，执行命令
+$ service rabbitmq-server stop
+查看rabbitmq安装的相关列表
+$ yum list | grep rabbitmq
+卸载rabbitmq已安装的相关内容
+$ yum -y remove rabbitmq-server.noarch
+2、卸载erlang
+查看erlang安装的相关列表
+$ yum list | grep erlang
+卸载erlang已安装的相关内容
+$ yum -y remove erlang-*
+$ yum remove erlang.x86_64
+卸载完之后就可以重新安装了
+
+==============================Docker====================
+//启动docker
+systemctl daemon-reload
+systemctl restart docker.service
+
+//查看运行状态
+sudo service docker status  应该可以看到绿色的active(running)
+
+//下载镜像，已RabbitMQ为例
+docker pull rabbitmq:3.8.5    指定版本去Docker Hub上找
+
+//启动与关闭
+先用docker images查看想启动的镜像id
+docker start image_id--启动
+docker stop image_id--停止
+注意如果是第一次运行这个镜像要先用docker run命令，去找对应镜像的对应docker run命令，一般官网上有
+docker run -p 6380:6380 -d redis:6.0.6 redis-server
+docker run 只在第一次运行时使用，将镜像放到容器中，以后再次启动这个容器时，只需要使用命令docker start 即可。
+docker run相当于执行了两步操作：将镜像放入容器中（docker create）,然后将容器启动，使之变成运行时容器（docker start）。
+而docker start的作用是，重新启动已存在的镜像。
+也就是说，如果使用这个命令，我们必须事先知道这个容器的ID，或者这个容器的名字，我们可以使用docker ps找到这个容器的信息
+
+//删除镜像
+docker rm image_id
+
+//docker进入redis容器执行命令   
+[root@PLM-CACHE-DEV hik]# docker exec -it bcbf2fad7bc1 /bin/bash
+root@bcbf2fad7bc1:/data# redis-cli
+127.0.0.1:6379> set pdm pdm
+OK
+127.0.0.1:6379> get pdm
+"pdm"
+127.0.0.1:6379> quit
+root@bcbf2fad7bc1:/data#
+root@bcbf2fad7bc1:/data# exit
+exit
+[root@PLM-CACHE-DEV hik]#
+
+======================yum=========================
+列出可安装的版本
+yum list docker-ce --showduplicates|sort -r
+
+
+========================feedback启动===========================
+nohup java -jar Feedback-1.0-SNAPSHOT.jar --spring.profiles.active=PRD > /hik/app/nohup.out 2>&1 &
+nohup java -jar Feedback-1.0-SNAPSHOT.jar --spring.profiles.active=TST > /hik/app/nohup.out 2>&1 &
+nohup java -jar Feedback-1.0-SNAPSHOT.jar --spring.profiles.active=UAT > /hik/app/nohup.out 2>&1 &
+nohup java -jar Feedback-1.0-SNAPSHOT.jar > /hik/stair/nohup.out 2>&1 &
+nohup java -jar Project-1.0-SNAPSHOT.jar > /hik/flow/nohup.out 2>&1 &
+nohup java -jar plmhardwarejwt-1.1.jar --spring.profiles.active=uat > /hik/hardware/nohup.out 2>&1 &
+
+===================rocketMq启动=================================
+nohup sh mqnamesrv >/zbq/rocketMq/mqLogs/namesrv.log 2>&1 &
+在bin中
+echo "brokerIP1=10.6.99.105" > broker.properties
+nohup sh mqbroker -n 47.105.66.253:9876 -c broker.properties > /zbq/rocketMq/mqLogs/broker.log 2>&1 &
+
+=====================WPP测试环境ssl key 密码=============================
+plmwpp
+
+
+
+
