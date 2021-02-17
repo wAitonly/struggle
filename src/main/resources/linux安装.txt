@@ -2,8 +2,9 @@ linux安装tomcat，如果有防火墙，后需要开放tomcat访问端口
 firewall-cmd --permanent --zone=public --add-port=8080/tcp
 firewall-cmd --reload
 firewall-cmd --zone=public --query-port=8080/tcp
-
-8080 8089 80 1532
+systemctl start firewalld开启防火墙
+systemctl status firewalld查看firewalld状态
+systemctl stop firewalld关闭防火墙
 
 =================nginx安装===========================
 下载 
@@ -65,26 +66,6 @@ systemctl enable vsftpd.service
 systemctl start vsftpd.service
 无用户名和密码模式安装完毕，会自动生成/var/ftp文件夹，该文件夹即ftp默认地址
 里面有默认文件夹pub,浏览器通过ftp://10.2.158.75/pub即可访问该文件夹
-
-====================WPP打包=============================
-注意资源文件夹是否为webapp
-在pom.xml中 <!--指定jsp等文件所在位置-->
-<warSourceDirectory>webapp</warSourceDirectory>
-
-tomcat的webapp文件夹下有多个目录时候
-1.删除其他项目文件
-2.
-conf/web.xml --> tomcat的Web配置文件
-<init-param>
-<param-name>listings</param-name>
-<param-value>false</param-value>
-</init-param>
-value改成 true就行了！
-<init-param>
-<param-name>listings</param-name>
-<param-value>true</param-value>
-</init-param>
-
 
 ===================rabbitMQ========================
 //重置RabbitMQ
@@ -152,23 +133,11 @@ exit
 列出可安装的版本
 yum list docker-ce --showduplicates|sort -r
 
-
-========================feedback启动===========================
-nohup java -jar Feedback-1.0-SNAPSHOT.jar --spring.profiles.active=PRD > /hik/app/nohup.out 2>&1 &
-nohup java -jar Feedback-1.0-SNAPSHOT.jar --spring.profiles.active=TST > /hik/app/nohup.out 2>&1 &
-nohup java -jar Feedback-1.0-SNAPSHOT.jar --spring.profiles.active=UAT > /hik/app/nohup.out 2>&1 &
-nohup java -jar Feedback-1.0-SNAPSHOT.jar > /hik/stair/nohup.out 2>&1 &
-nohup java -jar Project-1.0-SNAPSHOT.jar > /hik/flow/nohup.out 2>&1 &
-nohup java -jar plmhardwarejwt-1.1.jar --spring.profiles.active=uat > /hik/hardware/nohup.out 2>&1 &
-
 ===================rocketMq启动=================================
 nohup sh mqnamesrv >/zbq/rocketMq/mqLogs/namesrv.log 2>&1 &
 在bin中
 echo "brokerIP1=10.6.99.105" > broker.properties
 nohup sh mqbroker -n 47.105.66.253:9876 -c broker.properties > /zbq/rocketMq/mqLogs/broker.log 2>&1 &
-
-=====================WPP测试环境ssl key 密码=============================
-plmwpp
 
 
 

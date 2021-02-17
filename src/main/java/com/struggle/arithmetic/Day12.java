@@ -1,10 +1,6 @@
 package com.struggle.arithmetic;
 
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.IntStream;
-
 /**
  * 接雨水
  * @author zhaobenquan
