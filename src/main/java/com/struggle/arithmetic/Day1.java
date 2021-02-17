@@ -6,7 +6,7 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 /**
- * 两树之和
+ * 两数之和
  * 寻找两个正序数组的中位数
  * @author zhaobenquan
  */
