@@ -2,6 +2,7 @@ package com.struggle.arithmetic;
 
 /**
  * 10.正则表达式匹配
+ * 视频解读：https://leetcode-cn.com/problems/regular-expression-matching/solution/shi-pin-tu-jie-dong-tai-gui-hua-zheng-ze-biao-da-s/
  * @author zhaobenquan
  */
 public class Day15 {
