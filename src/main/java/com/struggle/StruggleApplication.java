@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * 每天两道算法题，睡前都不用数羊了
+ * 每天一道算法题，keepCoding到退休
  * @author zhaobenquan
  */
 @SpringBootApplication

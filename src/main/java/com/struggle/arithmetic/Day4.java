@@ -29,12 +29,10 @@ public class Day4 {
 
     @SuppressWarnings("all")
     private static ListNode one(ListNode head){
-        ListNode first = null;
-        ListNode result = null;
-        reversal(head,first);
-        return result;
+        return reversal(head,null);
     }
 
+    @SuppressWarnings("all")
     private static ListNode reversal(ListNode node,ListNode nodeNext){
         if(null == node){
             return null;
