@@ -42,14 +42,14 @@ public class Day20 {
     private static void backtrack(int n, List<Integer> output, List<List<Integer>> res, int first) {
         // 所有数都填完了
         if (first == n) {
-            res.add(new ArrayList<Integer>(output));
+            res.add(new ArrayList<>(output));
         }
         for (int i = first; i < n; i++) {
-            // 动态维护数组
+            // 交换位置
             Collections.swap(output, first, i);
             // 继续递归填下一个数
             backtrack(n, output, res, first + 1);
-            // 撤销操作
+            // 撤销交换位置
             Collections.swap(output, first, i);
         }
     }
